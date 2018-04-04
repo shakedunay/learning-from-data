@@ -29,7 +29,6 @@ def get_rand_linear_function():
 
     return m, b 
 
-
 def create_points(num_points):
     # creates a random linear target function
     target_func_m, target_func_b = get_rand_linear_function()
@@ -50,16 +49,6 @@ def create_points(num_points):
 
     return X, y, target_func_m, target_func_b
         
-
-def perceptronCalc(x, w):
-    return x[0]*w[0] + x[1]*w[1] + x[2]*w[2]
-
-def sign(x, w):
-    if perceptronCalc(x, w) >= 0:
-        return 1
-    else:
-        return -1
-
 def update_weights(x_i, y_i, w):
     w[0] += x_i[0]*y_i
     w[1] += x_i[1]*y_i
@@ -90,7 +79,7 @@ def pla(X, y, should_plot=False):
 
     # adding bias to X
     X_new = np.hstack((X0, X))
-    w = np.ones((3,1))
+    w = np.zeros((3,1))
 
     while True:
         num_iterations += 1
@@ -126,7 +115,7 @@ def main():
     should_plot = False
 
     for _ in range(num_experiments):
-        X, y, target_func_m, target_func_b = create_points(num_points=10)
+        X, y, target_func_m, target_func_b = create_points(num_points=100)
         if should_plot:
             first_label_dx = np.where(y == -1)
             plt.scatter(
@@ -143,9 +132,6 @@ def main():
         num_iterations, pred_m, pred_b = pla(X, y, should_plot)
 
         total_iterations += num_iterations
-
-        # print(pred_m, target_func_m)
-        # print(pred_b, target_func_b)
 
     avg_iterations = total_iterations / num_experiments
     print(avg_iterations)
