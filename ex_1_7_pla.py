@@ -64,6 +64,37 @@ def sign(x):
 
     return res
 
+
+def evaluate(num_points, pred_func_m, pred_func_b, target_func_m, target_func_b):
+    # creates a random linear target function
+    # target_func_m, target_func_b = get_rand_linear_function()
+    
+    X = np.random.uniform(
+        low=low_range,
+        high=high_range,
+        size=(num_points, d),
+    )
+
+    target_y = np.zeros((num_points))
+
+    for i in range(num_points):
+        if X[i, 1] > target_func_m*X[i, 0] + target_func_b:
+            target_y[i] = 1
+        else:
+            target_y[i] = -1
+
+    pred_y = np.zeros((num_points))
+
+    for i in range(num_points):
+        if X[i, 1] > pred_func_m*X[i, 0] + pred_func_b:
+            pred_y[i] = 1
+        else:
+            pred_y[i] = -1
+
+    total_disagree = len(np.where(target_y != pred_y)[0])
+    avg_disagree = total_disagree / num_points
+    print('avg_disagree', avg_disagree)
+
 def pla(X, y, should_plot=False):
     '''
     Returns:
@@ -86,6 +117,7 @@ def pla(X, y, should_plot=False):
         perceptron = X_new.dot(w)
         y_pred = sign(perceptron)
         misclassified_points = np.where(y[:, np.newaxis] != y_pred)[0]
+        
         all_good = misclassified_points.size == 0
 
         if all_good:
@@ -129,12 +161,20 @@ def main():
                 X[second_label_dx, 1],
             )
 
-        num_iterations, pred_m, pred_b = pla(X, y, should_plot)
+        num_iterations, pred_func_m, pred_func_b = pla(X, y, should_plot)
 
         total_iterations += num_iterations
 
     avg_iterations = total_iterations / num_experiments
-    print(avg_iterations)
+    print('avg_iterations', avg_iterations)
+
+    evaluate(
+        1000,
+        pred_func_m,
+        pred_func_b,
+        target_func_m,
+        target_func_b,
+    )
     plt.show()
 
 if __name__ == '__main__':
