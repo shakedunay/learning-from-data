@@ -60,16 +60,20 @@ def sign(x, w):
     else:
         return -1
 
-def change_weights(X, y, w):
-    weights_changed = False
-    for i in range(len(X)):
-        should_change = sign(X[i], w) != y[i]
-        if should_change:
-            weights_changed = True
-            w[0] += X[i, 0]*y[i]
-            w[1] += X[i, 1]*y[i]
-            w[2] += X[i, 2]*y[i]
-    return weights_changed
+def update_weights(x_i, y_i, w):
+    w[0] += x_i[0]*y_i
+    w[1] += x_i[1]*y_i
+    w[2] += x_i[2]*y_i
+
+def sign(x):
+    res = np.zeros(x.shape)
+    positive_idx = np.where(x>=0)
+    negative_idx = np.where(x<0)
+
+    res[positive_idx] = 1
+    res[negative_idx] = -1
+
+    return res
 
 def pla(X, y, should_plot=False):
     '''
@@ -87,10 +91,21 @@ def pla(X, y, should_plot=False):
     # adding bias to X
     X_new = np.hstack((X0, X))
     w = np.ones((3,1))
-    while should_run:
-        weights_changed = change_weights(X_new, y, w)
+
+    while True:
         num_iterations += 1
-        should_run = weights_changed
+        perceptron = X_new.dot(w)
+        y_pred = sign(perceptron)
+        misclassified_points = np.where(y[:, np.newaxis] != y_pred)[0]
+        all_good = misclassified_points.size == 0
+
+        if all_good:
+            break
+
+        misclassified_point = np.random.choice(misclassified_points)
+
+        update_weights(X_new[misclassified_point], y[misclassified_point], w)
+
     
     # As your decision function is simply sign(w0 + w1*x1 +w2*x2) then the decision boundary equation is a line with canonical form: w0 + w1*x1 + w2*x2 = 0
     decision_boundary_m = -w[1] / w[2]
@@ -105,15 +120,13 @@ def pla(X, y, should_plot=False):
     return num_iterations, decision_boundary_m, decision_boundary_b
 
 def main():
-    num_experiments = 1
+    num_experiments = 1000
     total_iterations = 0
     
-    should_plot = True
+    should_plot = False
 
     for _ in range(num_experiments):
-        X, y, target_func_m, target_func_b = create_points(num_points=100)
-        
-
+        X, y, target_func_m, target_func_b = create_points(num_points=10)
         if should_plot:
             first_label_dx = np.where(y == -1)
             plt.scatter(
