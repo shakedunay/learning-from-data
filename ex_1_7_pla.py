@@ -1,54 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
+from utils import create_points, get_rand_linear_function, evaluate
 
 low_range = -1
 high_range = 1
 
 d = 2
-
-def get_rand_linear_function():
-    '''
-    Returns:
-        random m, b for the equation y = mx + b
-    '''
-    rand_points = np.random.uniform(
-        low=low_range,
-        high=high_range,
-        size=(2,2),
-    )
-
-    a = rand_points[0]
-    b = rand_points[1]
-
-    # m = slope = (y1-y2)/(x1-x2)
-    m = (a[1] - b[1]) / (a[0] - b[0])
-
-    # b = y-intercept = (x1*y1 - x2*y1)/(x1-x2)
-    # b =  y - mx
-    b = a[1] - m*a[0]
-
-    return m, b 
-
-def create_points(num_points):
-    # creates a random linear target function
-    target_func_m, target_func_b = get_rand_linear_function()
-    
-    X = np.random.uniform(
-        low=low_range,
-        high=high_range,
-        size=(num_points, d),
-    )
-
-    y = np.zeros((num_points))
-
-    for i in range(num_points):
-        if X[i, 1] > target_func_m*X[i, 0] + target_func_b:
-            y[i] = 1
-        else:
-            y[i] = -1
-
-    return X, y, target_func_m, target_func_b
-        
+       
 def update_weights(x_i, y_i, w):
     w[0] += x_i[0]*y_i
     w[1] += x_i[1]*y_i
@@ -64,37 +22,6 @@ def sign(x):
 
     return res
 
-
-def evaluate(num_points, pred_func_m, pred_func_b, target_func_m, target_func_b):
-    # creates a random linear target function
-    # target_func_m, target_func_b = get_rand_linear_function()
-    
-    X = np.random.uniform(
-        low=low_range,
-        high=high_range,
-        size=(num_points, d),
-    )
-
-    target_y = np.zeros((num_points))
-
-    for i in range(num_points):
-        if X[i, 1] > target_func_m*X[i, 0] + target_func_b:
-            target_y[i] = 1
-        else:
-            target_y[i] = -1
-
-    pred_y = np.zeros((num_points))
-
-    for i in range(num_points):
-        if X[i, 1] > pred_func_m*X[i, 0] + pred_func_b:
-            pred_y[i] = 1
-        else:
-            pred_y[i] = -1
-
-    total_disagree = len(np.where(target_y != pred_y)[0])
-    avg_disagree = total_disagree / num_points
-    print('avg_disagree', avg_disagree)
-
 def pla(X, y, should_plot=False):
     '''
     Returns:
@@ -103,8 +30,6 @@ def pla(X, y, should_plot=False):
         num_iterations - num iteration it took the pla to run
     '''
     num_iterations = 0 
-    # pred_m, pred_b = get_rand_linear_function()
-    should_run = True
 
     X0 = np.ones((len(X), 1))
 
@@ -147,7 +72,12 @@ def main():
     should_plot = False
 
     for _ in range(num_experiments):
-        X, y, target_func_m, target_func_b = create_points(num_points=100)
+        X, y, target_func_m, target_func_b = create_points(
+            num_points=100,
+            low_range=low_range,
+            high_range=high_range,
+            d=d,
+        )
         if should_plot:
             first_label_dx = np.where(y == -1)
             plt.scatter(
@@ -174,6 +104,9 @@ def main():
         pred_func_b,
         target_func_m,
         target_func_b,
+        low_range=low_range,
+        high_range=high_range,
+        d=d,
     )
     plt.show()
 
