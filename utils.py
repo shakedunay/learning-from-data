@@ -27,7 +27,7 @@ def get_rand_linear_function(low_range, high_range):
 
 def create_points(num_points, low_range, high_range, d):
     # creates a random linear target function
-    target_func_m, target_func_b = get_rand_linear_function(
+    func_m, func_bias = get_rand_linear_function(
         low_range=low_range,
         high_range=high_range,
         )
@@ -41,40 +41,33 @@ def create_points(num_points, low_range, high_range, d):
     y = np.zeros((num_points))
 
     for i in range(num_points):
-        if X[i, 1] > target_func_m*X[i, 0] + target_func_b:
+        if X[i, 1] > func_m*X[i, 0] + func_bias:
             y[i] = 1
         else:
             y[i] = -1
 
-    return X, y, target_func_m, target_func_b
+    return X, y, func_m, func_bias
 
 
-def evaluate(num_points, pred_func_m, pred_func_b, target_func_m, target_func_b, low_range, high_range, d):
-    # creates a random linear target function
-    # target_func_m, target_func_b = get_rand_linear_function()
-
-    X = np.random.uniform(
-        low=low_range,
-        high=high_range,
-        size=(num_points, d),
-    )
-
-    target_y = np.zeros((num_points))
-
-    for i in range(num_points):
-        if X[i, 1] > target_func_m*X[i, 0] + target_func_b:
-            target_y[i] = 1
-        else:
-            target_y[i] = -1
-
-    pred_y = np.zeros((num_points))
-
-    for i in range(num_points):
-        if X[i, 1] > pred_func_m*X[i, 0] + pred_func_b:
-            pred_y[i] = 1
-        else:
-            pred_y[i] = -1
-
-    total_disagree = len(np.where(target_y != pred_y)[0])
+def evaluate(y_pred, y_true):
+    num_points = len(y_true)
+    total_disagree = len(np.where(y_true != y_pred)[0])
     avg_disagree = total_disagree / num_points
-    print('avg_disagree', avg_disagree)
+    return avg_disagree
+
+
+class LinearPredictor:
+    def __init__(self, func_m, func_b):
+        self.func_m = func_m
+        self.func_b = func_b
+
+    def predict(self, X):
+        y = np.zeros((len(X)))
+
+        for i in range(len(X)):
+            if X[i, 1] > self.func_m*X[i, 0] + self.func_b:
+                y[i] = 1
+            else:
+                y[i] = -1
+
+        return y
