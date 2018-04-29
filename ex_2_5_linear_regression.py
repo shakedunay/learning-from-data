@@ -1,26 +1,11 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import create_points, get_rand_linear_function, evaluate, LinearPredictor
+from utils import create_labeled_points, get_rand_linear_function, evaluate, LinearPredictor
 
 low_range = -1
 high_range = 1
 
 d = 2
-       
-# def update_weights(x_i, y_i, w):
-#     w[0] += x_i[0]*y_i
-#     w[1] += x_i[1]*y_i
-#     w[2] += x_i[2]*y_i
-
-# def sign(x):
-#     res = np.zeros(x.shape)
-#     positive_idx = np.where(x>=0)
-#     negative_idx = np.where(x<0)
-
-#     res[positive_idx] = 1
-#     res[negative_idx] = -1
-
-#     return res
 
 def linear_regression(X, y, should_plot=False):
     X0 = np.ones((len(X), 1))
@@ -42,64 +27,81 @@ def linear_regression(X, y, should_plot=False):
 
     return decision_boundary_m, decision_boundary_b
 
+
+def run_experiment(num_points, should_plot):
+    func_m, func_bias = get_rand_linear_function(
+        low_range=low_range,
+        high_range=high_range,
+    )
+    X, y = create_labeled_points(
+        func_m=func_m,
+        func_bias=func_bias,
+        num_points=num_points,
+        low_range=low_range,
+        high_range=high_range,
+        d=d,
+    )
+    if should_plot:
+        first_label_dx = np.where(y == -1)
+        plt.scatter(
+            X[first_label_dx, 0],
+            X[first_label_dx, 1],
+        )
+        second_label_dx = np.where(y == 1)
+
+        plt.scatter(
+            X[second_label_dx, 0],
+            X[second_label_dx, 1],
+        )
+
+    pred_func_m, pred_func_b = linear_regression(
+        X, y, should_plot)
+
+    linear_predictor = LinearPredictor(
+        func_m=pred_func_m,
+        func_b=pred_func_b,
+    )
+
+    y_pred_e_in = linear_predictor.predict(X)
+    avg_e_in = evaluate(
+        y_pred=y_pred_e_in,
+        y_true=y,
+    )
+
+    X_out, y_out = create_labeled_points(
+        func_m=func_m,
+        func_bias=func_bias,
+        num_points=1000,
+        low_range=low_range,
+        high_range=high_range,
+        d=d,
+    )
+
+    y_pred_e_out = linear_predictor.predict(X_out)
+    avg_e_out = evaluate(
+        y_pred=y_pred_e_out,
+        y_true=y_out,
+    )
+
+    return avg_e_in, avg_e_out
+
 def main():
     num_experiments = 1000
-    total_iterations = 0
-    
+
     should_plot = False
 
+    for num_points in (100, ):
+        sum_avg_e_in = 0
+        sum_avg_e_out = 0
+        for _ in range(num_experiments):
+            avg_e_in, avg_e_out = run_experiment(num_points, should_plot)
+            sum_avg_e_in += avg_e_in
+            sum_avg_e_out += avg_e_out
 
-    sum_avg_disagree = 0
-    for _ in range(num_experiments):
-        X, y, target_func_m, target_func_b = create_points(
-            num_points=100,
-            low_range=low_range,
-            high_range=high_range,
-            d=d,
-        )
-        if should_plot:
-            first_label_dx = np.where(y == -1)
-            plt.scatter(
-                X[first_label_dx, 0],
-                X[first_label_dx, 1],
-            )
-            second_label_dx = np.where(y == 1)
-
-            plt.scatter(
-                X[second_label_dx, 0],
-                X[second_label_dx, 1],
-            )
-
-        pred_func_m, pred_func_b = linear_regression(X, y, should_plot)
-        linear_predictor = LinearPredictor(
-            pred_func_m=pred_func_m,
-            pred_func_b=pred_func_b,
-        )
-
-        sum_avg_disagree += evaluate(
-            1000,
-            pred_func_m,
-            pred_func_b,
-            target_func_m,
-            target_func_b,
-            low_range=low_range,
-            high_range=high_range,
-            d=d,
-        )
-    # evaluate(
-    #     1000,
-    #     pred_func_m,
-    #     pred_func_b,
-    #     target_func_m,
-    #     target_func_b,
-    #     low_range=low_range,
-    #     high_range=high_range,
-    #     d=d,
-    # )
-    # plt.show()
-
-    total_e_in_avg_disagree = sum_avg_disagree / num_experiments
-    print('total_e_in_avg_disagree', total_e_in_avg_disagree)
-
+        print('N', num_points)
+        total_avg_e_in = sum_avg_e_in / num_experiments
+        print('total_avg_e_in', total_avg_e_in)
+        total_avg_e_out = sum_avg_e_out / num_experiments
+        print('total_avg_e_out', total_avg_e_out)
 if __name__ == '__main__':
     main()

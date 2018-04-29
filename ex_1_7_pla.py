@@ -1,6 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
-from utils import create_points, get_rand_linear_function, evaluate, LinearPredictor
+from utils import create_labeled_points, get_rand_linear_function, evaluate, LinearPredictor
 
 low_range = -1
 high_range = 1
@@ -71,12 +71,16 @@ def main():
     
     should_plot = False
 
-    num_points_list = (10, 100)
-
-    for num_points in num_points_list:
+    for num_points in (10, 100):
         sum_avg_disagree = 0 
         for _ in range(num_experiments):
-            X, y, target_func_m, target_func_b = create_points(
+            func_m, func_bias = get_rand_linear_function(
+                low_range=low_range,
+                high_range=high_range,
+            )
+            X, y = create_labeled_points(
+                func_m=func_m,
+                func_bias=func_bias,
                 num_points=num_points,
                 low_range=low_range,
                 high_range=high_range,
@@ -101,11 +105,22 @@ def main():
                 func_m=pred_func_m,
                 func_b=pred_func_b,
             )
-            y_pred_e_in = linear_predictor.predict(X)
-            avg_disagree = evaluate(
-                y_pred=y_pred_e_in,
-                y_true=y,
+
+            X_test, y_test = create_labeled_points(
+                func_m=func_m,
+                func_bias=func_bias,
+                num_points=num_points,
+                low_range=low_range,
+                high_range=high_range,
+                d=d,
             )
+
+            y_pred_e_out = linear_predictor.predict(X_test)
+            avg_disagree = evaluate(
+                y_pred=y_pred_e_out,
+                y_true=y_test,
+            )
+            sum_avg_disagree += avg_disagree
 
             total_iterations += num_iterations
 

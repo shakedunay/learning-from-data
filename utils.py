@@ -25,13 +25,8 @@ def get_rand_linear_function(low_range, high_range):
     return m, b
 
 
-def create_points(num_points, low_range, high_range, d):
+def create_labeled_points(func_m, func_bias, num_points, low_range, high_range, d):
     # creates a random linear target function
-    func_m, func_bias = get_rand_linear_function(
-        low_range=low_range,
-        high_range=high_range,
-        )
-
     X = np.random.uniform(
         low=low_range,
         high=high_range,
@@ -46,7 +41,7 @@ def create_points(num_points, low_range, high_range, d):
         else:
             y[i] = -1
 
-    return X, y, func_m, func_bias
+    return X, y
 
 
 def evaluate(y_pred, y_true):
